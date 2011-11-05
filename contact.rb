@@ -13,7 +13,7 @@ class Contact
       (@lastname,@firstname) = m_name[1].split(';')
     end
     # FULL NAME:
-    @full_name = vcard.match(/^FN:(.*)/)[1]
+    @full_name = vcard.match(/^FN:(.*)/)[1].chomp("\r")
     # ORGANISATION:
     m_organisation = vcard.match(/^ORG:(.*);/)
     @organisation = m_organisation[1] if m_organisation
@@ -41,11 +41,23 @@ class Contact
     m_note = vcard.match(/^NOTE:(.*)/)
     @note = m_note[1] if m_note
     @note = remove_escapes(@note) if @note
-
   end
 
   def to_markdown
-    
+    out = %{#{@full_name}
+#{'='*@full_name.size}
+}
+    if get_name.strip != ''
+      out << %{
+Name: #{get_name}
+}
+    end
+
+    out
+  end
+
+  def get_name
+    "#{@firstname} #{@lastname}"
   end
 
   private
