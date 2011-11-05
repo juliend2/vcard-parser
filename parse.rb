@@ -18,16 +18,37 @@ class Contact
     # ORGANISATION:
     m_organisation = vcard.match(/^ORG:(.*);/)
     @organisation = m_organisation[1] if m_organisation
-    # EMAILS
+    # EMAILS:
     e_reg = Regexp.new(/\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\b/)   
     @emails = vcard.scan(e_reg).uniq
-    # PHONES (will also grab faxes, but that's OK for now)
+    # PHONES (will also grab faxes, but that's OK for now):
     p_reg = Regexp.new(/\b(?:\(?(\d{3})\)?[ -]?)?(?:(\d{3})-?(\d{4}))\b/)
     @phones = vcard.scan(p_reg).uniq
     @phones.map!{|p| p.join('-')}
+    # ADDRESS:
+    m_address = vcard.match(/^item\d\.ADR.+type=(pref|HOME|WORK):(.*)/)
+    if m_address
+      @address = m_address[2]
+      @address = @address.split(';')
+      @address.delete('')
+      @address.delete("\r")
+      @address = @address.map{|elm| 
+        remove_escapes(elm) 
+      }.map {|elm|
+        elm.chomp("\r")
+      }
+    end
+    # NOTES:
     m_note = vcard.match(/^NOTE:(.*)/)
     @note = m_note[1] if m_note
-    @note = @note.gsub(/\\n/,"\n").gsub(/\\/,'') if @note
+    @note = remove_escapes(@note) if @note
+
+  end
+
+  private
+
+  def remove_escapes(string)
+    string.gsub(/\\n/,"\n").gsub(/\\/,'')
   end
 end
 
