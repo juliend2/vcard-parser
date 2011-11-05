@@ -1,5 +1,5 @@
 class Contact
-  attr_accessor :vcard_string, :full_name, :lastname, :firstname, :organisation, :emails, :phones, :url, :address, :note
+  attr_accessor :vcard_string, :full_name, :lastname, :firstname, :title, :organisation, :emails, :phones, :url, :address, :note
 
   def initialize(vcard)
     @vcard_string = vcard
@@ -14,12 +14,15 @@ class Contact
     end
     # FULL NAME:
     @full_name = vcard.match(/^FN:(.*)/)[1].chomp("\r")
+    # TITLE:
+    m_title = vcard.match(/^TITLE:(.*)/)
+    @title = m_title[1] if m_title
     # ORGANISATION:
     m_organisation = vcard.match(/^ORG:(.*);/)
     @organisation = m_organisation[1] if m_organisation
     # URL:
-    m_url = vcard.match(/^URL.*type=pref:(.*)/)
-    @url = remove_escapes(m_url[1]) if m_url
+    m_url = vcard.match(/^(item\d\.URL|URL).*type=pref:(.*)/)
+    @url = remove_escapes(m_url[2]) if m_url
     # EMAILS:
     e_reg = Regexp.new(/\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\b/)   
     @emails = vcard.scan(e_reg).uniq
@@ -53,6 +56,7 @@ class Contact
 }
     out << "Name: #{get_name}\n" if get_name.strip != ''
     out << "Organisation: #{@organisation}\n" if @organisation
+    out << "Title: #{@title}\n" if @title
     out << "Site: #{@url}\n" if @url
 
     out << %{
