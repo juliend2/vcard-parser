@@ -1,5 +1,5 @@
 class Contact
-  attr_accessor :vcard_string, :full_name, :lastname, :firstname, :organisation, :emails, :phones, :address, :note
+  attr_accessor :vcard_string, :full_name, :lastname, :firstname, :organisation, :emails, :phones, :url, :address, :note
 
   def initialize(vcard)
     @vcard_string = vcard
@@ -17,6 +17,9 @@ class Contact
     # ORGANISATION:
     m_organisation = vcard.match(/^ORG:(.*);/)
     @organisation = m_organisation[1] if m_organisation
+    # URL:
+    m_url = vcard.match(/^URL.*type=pref:(.*)/)
+    @url = remove_escapes(m_url[1]) if m_url
     # EMAILS:
     e_reg = Regexp.new(/\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\b/)   
     @emails = vcard.scan(e_reg).uniq
@@ -46,12 +49,35 @@ class Contact
   def to_markdown
     out = %{#{@full_name}
 #{'='*@full_name.size}
+
 }
-    if get_name.strip != ''
-      out << %{
-Name: #{get_name}
-}
-    end
+    out << "Name: #{get_name}\n" if get_name.strip != ''
+    out << "Organisation: #{@organisation}\n" if @organisation
+    out << "Site: #{@url}\n" if @url
+
+    out << %{
+Emails
+------
+#{@emails.map{|e| "* #{e}"}.join("\n")}
+} unless @emails.empty?
+
+    out << %{
+Phones
+------
+#{@phones.map{|p| "* #{p}"}.join("\n")}
+} unless @phones.empty?
+
+    out << %{
+Address
+-------
+#{@address.join("\n")}
+} if @address
+    
+    out << %{
+Note
+----
+#{@note}
+} if @note
 
     out
   end
