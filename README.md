@@ -12,6 +12,8 @@ Usage
 2. Export a vCard by going to File > Export > Export vCard...
 3. place this "vCards.vcf" file in the same directory as parse.rb
 4. run `ruby parse.rb`
+5. look into the newly created 'contacts' directory that should contain all your
+   contacts as markdown files
 
 
 Limitations
